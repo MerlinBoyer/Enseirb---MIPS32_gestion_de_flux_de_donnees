@@ -1,0 +1,876 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.70.1.5641/W32 for ARM      07/May/2018  12:45:21 #
+# Copyright 1999-2013 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\main. #
+#                    c                                                        #
+#    Command line =  H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\main. #
+#                    c -D at91sam7x256 -D sram -D TRACE_LEVEL=4 -lC           #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\List\ --remarks --diag_suppress         #
+#                    Pe826,Pe1375 -o H:\MIP\MI202_TP_micropro\ProjetConcombre #
+#                    DeMer\PCDM\ewp\at91sam7x256_sram\Obj\ --no_cse           #
+#                    --no_unroll --no_inline --no_code_motion --no_tbaa       #
+#                    --no_clustering --no_scheduling --debug --endian=little  #
+#                    --cpu=ARM7TDMI -e --fpu=None --dlib_config "C:\Program   #
+#                    Files (x86)\IAR Systems\Embedded Workbench               #
+#                    6.5\arm\INC\c\DLib_Config_Full.h" -I                     #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\. #
+#                    .\..\..\at91lib/peripherals\ -I                          #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\. #
+#                    .\..\..\at91lib\ -I H:\MIP\MI202_TP_micropro\ProjetConco #
+#                    mbreDeMer\PCDM\ewp\..\..\..\at91lib/components\ -I       #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\. #
+#                    .\..\..\at91lib/boards/at91sam7x-ek\ --interwork         #
+#                    --cpu_mode arm -Oh --use_c++_inline                      #
+#    List file    =  H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\List\main.lst                           #
+#    Object file  =  H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\Obj\main.o                              #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\main.c
+      1          // Include Standard files
+      2          #include "include/AT91SAM7X-EK.h"
+      3          #include <stdio.h>
+      4          #include <stdlib.h>
+      5          #include <string.h>
+      6          
+      7          /* Global variables */
+      8          
+      9          
+     10          //var pr le projet :
+
+   \                                 In section .bss, align 4
+     11          char FIFO[8000]; int fiw;int fir;  //fifo et ses indices d'écriture/lecture
+   \                     FIFO:
+   \   00000000                      DS8 8000
+
+   \                                 In section .bss, align 4
+   \                     fiw:
+   \   00000000                      DS8 4
+
+   \                                 In section .bss, align 4
+   \                     fir:
+   \   00000000                      DS8 4
+     12          
+     13          
+     14          
+     15          
+     16          
+     17          
+     18          ///////////////////////// fct send   ////////////////////////////
+     19          
+
+   \                                 In section .text, align 4, keep-with-next
+     20          void send_char_UART(char carac){  //envoie un carac sur la liaison USART
+     21            while(!AT91C_BASE_US0->US_CSR&AT91C_US_TXRDY){}       //attend que le module d'envoi soit libre
+   \                     send_char_UART:
+   \   00000000   0x........         LDR      R1,??DataTable11  ;; 0xfffc0014
+   \   00000004   0xE5911000         LDR      R1,[R1, #+0]
+     22            AT91C_BASE_US0->US_THR = carac;
+   \   00000008   0x........         LDR      R1,??DataTable11_1  ;; 0xfffc001c
+   \   0000000C   0xE5810000         STR      R0,[R1, #+0]
+     23          }
+   \   00000010   0xE12FFF1E         BX       LR               ;; return
+     24          
+
+   \                                 In section .text, align 4, keep-with-next
+     25          void send_char_DBGU(char carac){  //envoie un carac sur la liaison DBGU
+     26            while(!AT91C_BASE_DBGU->DBGU_CSR&AT91C_US_TXRDY){}       //attend que le module d'envoi soit libre
+   \                     send_char_DBGU:
+   \   00000000   0xE3E010EB         MVN      R1,#+235
+   \   00000004   0xE3C11ED0         BIC      R1,R1,#0xD00
+   \   00000008   0xE5911000         LDR      R1,[R1, #+0]
+     27            AT91C_BASE_DBGU->DBGU_THR = carac;
+   \   0000000C   0xE3E010E3         MVN      R1,#+227
+   \   00000010   0xE3C11ED0         BIC      R1,R1,#0xD00
+   \   00000014   0xE5810000         STR      R0,[R1, #+0]
+     28          }
+   \   00000018   0xE12FFF1E         BX       LR               ;; return
+     29          
+
+   \                                 In section .text, align 4, keep-with-next
+     30          void send_word(char *tab){ //envoie tout le tableau de carac passé en argument dans l'usart (vers Teraterm)
+     31            int i =0;
+   \                     send_word:
+   \   00000000   0x........         LDR      R2,??DataTable11_1  ;; 0xfffc001c
+   \   00000004   0xEA000005         B        ??send_word_0
+     32            while(tab[i]!='\0'){
+     33              while(!(AT91C_BASE_US0->US_CSR&AT91C_US_TXRDY)){}
+   \                     ??send_word_1:
+   \   00000008   0xE3C21008         BIC      R1,R2,#0x8
+   \   0000000C   0xE5911000         LDR      R1,[R1, #+0]
+   \   00000010   0xE3110002         TST      R1,#0x2
+   \   00000014   0x0AFFFFFB         BEQ      ??send_word_1
+     34              AT91C_BASE_US0->US_THR = tab[i];
+   \   00000018   0xE4D01001         LDRB     R1,[R0], #+1
+   \   0000001C   0xE5821000         STR      R1,[R2, #+0]
+     35              i++;
+     36            }
+   \                     ??send_word_0:
+   \   00000020   0xE5D01000         LDRB     R1,[R0, #+0]
+   \   00000024   0xE3510000         CMP      R1,#+0
+   \   00000028   0x1AFFFFF6         BNE      ??send_word_1
+     37          }
+   \   0000002C   0xE12FFF1E         BX       LR               ;; return
+     38          
+
+   \                                 In section .text, align 4, keep-with-next
+     39          void send_back(){ //echo de carac sur l'usart
+     40            if((AT91C_BASE_US0->US_CSR&AT91C_US_RXRDY)){
+   \                     send_back:
+   \   00000000   0x........         LDR      R0,??DataTable11  ;; 0xfffc0014
+   \   00000004   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000008   0xE3100001         TST      R0,#0x1
+     41              char carac = AT91C_BASE_US0->US_RHR&0x00FF; //recup des 8 derniers bits
+   \   0000000C   0x........         LDRNE    R0,??DataTable11_2  ;; 0xfffc0018
+   \   00000010   0x15900000         LDRNE    R0,[R0, #+0]
+     42              send_char_UART(carac);
+   \   00000014   0x120000FF         ANDNE    R0,R0,#0xFF
+   \   00000018   0x........         BNE      send_char_UART   ;; tailcall
+     43            }
+     44          }
+   \   0000001C   0xE12FFF1E         BX       LR               ;; return
+     45          
+     46          
+
+   \                                 In section .text, align 4, keep-with-next
+     47          void send_fifo(char *tab){  //envoie les caracs de fir à fiw de la fifo
+   \                     send_fifo:
+   \   00000000   0xE92D4010         PUSH     {R4,LR}
+   \   00000004   0xE1A04000         MOV      R4,R0
+   \   00000008   0xEA000009         B        ??send_fifo_0
+     48            while(fir <= fiw){
+     49              while(!(AT91C_BASE_US0->US_CSR&AT91C_US_TXRDY)){}
+     50              if (tab[fir]==255){ //reception d'une trame de l'image ascii en retour d'un 'L'
+     51                if(fir+3 > fiw){;} //on n'a pas encore recu les caracteres suivants de la trame
+     52                else{
+     53                decodeASCII(tab[fir+1],tab[fir+2],tab[fir+3]); //on affiche le caractere a la bonne place
+     54                fir += 4;
+     55                }
+     56              }else{  //sinon on affiche simplement le message
+     57                AT91C_BASE_US0->US_THR = tab[fir];
+   \                     ??send_fifo_1:
+   \   0000000C   0x........         LDR      R0,??DataTable11_3
+   \   00000010   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000014   0xE7D00004         LDRB     R0,[R0, +R4]
+   \   00000018   0x........         LDR      R1,??DataTable11_1  ;; 0xfffc001c
+   \   0000001C   0xE5810000         STR      R0,[R1, #+0]
+     58                fir++;
+   \   00000020   0x........         LDR      R0,??DataTable11_3
+   \   00000024   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000028   0xE2800001         ADD      R0,R0,#+1
+   \                     ??send_fifo_2:
+   \   0000002C   0x........         LDR      R1,??DataTable11_3
+   \   00000030   0xE5810000         STR      R0,[R1, #+0]
+     59              }
+   \                     ??send_fifo_0:
+   \   00000034   0x........         LDR      R0,??DataTable11_4
+   \   00000038   0xE5900000         LDR      R0,[R0, #+0]
+   \   0000003C   0x........         LDR      R1,??DataTable11_3
+   \   00000040   0xE5911000         LDR      R1,[R1, #+0]
+   \   00000044   0xE1500001         CMP      R0,R1
+   \   00000048   0xBA000020         BLT      ??send_fifo_3
+   \                     ??send_fifo_4:
+   \   0000004C   0x........         LDR      R0,??DataTable11  ;; 0xfffc0014
+   \   00000050   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000054   0xE3100002         TST      R0,#0x2
+   \   00000058   0x0AFFFFFB         BEQ      ??send_fifo_4
+   \   0000005C   0x........         LDR      R0,??DataTable11_3
+   \   00000060   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000064   0xE7D00004         LDRB     R0,[R0, +R4]
+   \   00000068   0xE35000FF         CMP      R0,#+255
+   \   0000006C   0x1AFFFFE6         BNE      ??send_fifo_1
+   \   00000070   0x........         LDR      R0,??DataTable11_4
+   \   00000074   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000078   0x........         LDR      R1,??DataTable11_3
+   \   0000007C   0xE5911000         LDR      R1,[R1, #+0]
+   \   00000080   0xE2811003         ADD      R1,R1,#+3
+   \   00000084   0xE1500001         CMP      R0,R1
+   \   00000088   0xBAFFFFEF         BLT      ??send_fifo_4
+   \   0000008C   0x........         LDR      R0,??DataTable11_3
+   \   00000090   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000094   0xE0800004         ADD      R0,R0,R4
+   \   00000098   0xE5D02003         LDRB     R2,[R0, #+3]
+   \   0000009C   0x........         LDR      R0,??DataTable11_3
+   \   000000A0   0xE5900000         LDR      R0,[R0, #+0]
+   \   000000A4   0xE0800004         ADD      R0,R0,R4
+   \   000000A8   0xE5D01002         LDRB     R1,[R0, #+2]
+   \   000000AC   0x........         LDR      R0,??DataTable11_3
+   \   000000B0   0xE5900000         LDR      R0,[R0, #+0]
+   \   000000B4   0xE0800004         ADD      R0,R0,R4
+   \   000000B8   0xE5D00001         LDRB     R0,[R0, #+1]
+   \   000000BC   0x........         BL       decodeASCII
+   \   000000C0   0x........         LDR      R0,??DataTable11_3
+   \   000000C4   0xE5900000         LDR      R0,[R0, #+0]
+   \   000000C8   0xE2800004         ADD      R0,R0,#+4
+   \   000000CC   0xEAFFFFD6         B        ??send_fifo_2
+     60            }
+     61          }
+   \                     ??send_fifo_3:
+   \   000000D0   0xE8BD4010         POP      {R4,LR}
+   \   000000D4   0xE12FFF1E         BX       LR               ;; return
+     62          
+     63          
+     64          
+     65          
+     66          
+     67          
+     68          ///////////////////////// fct curseur et dessin   ////////////////////////////
+     69          
+     70          ///// determine centaine/dizaine/unite a partir d'un char*
+
+   \                                 In section .text, align 4, keep-with-next
+     71          char Scentaine(char* carac){
+   \                     Scentaine:
+   \   00000000   0xE92D5000         PUSH     {R12,LR}
+     72            int centaine = atoi(carac)/100;
+     73            return centaine+'0';
+   \   00000004   0x........         BL       atoi
+   \   00000008   0x........         LDR      R1,??DataTable11_5  ;; 0x51eb851f
+   \   0000000C   0xE0C12190         SMULL    R2,R1,R0,R1
+   \   00000010   0xE1A002C1         ASR      R0,R1,#+5
+   \   00000014   0xE0800FA0         ADD      R0,R0,R0, LSR #+31
+   \   00000018   0x........         B        ?Subroutine1
+     74          }
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ?Subroutine1:
+   \   00000000   0xE2800030         ADD      R0,R0,#+48
+   \   00000004   0xE20000FF         AND      R0,R0,#0xFF
+   \   00000008   0xE8BD4002         POP      {R1,LR}
+   \   0000000C   0xE12FFF1E         BX       LR               ;; return
+     75          
+
+   \                                 In section .text, align 4, keep-with-next
+     76          char Sdizaine(char* carac){
+   \                     Sdizaine:
+   \   00000000   0xE92D4038         PUSH     {R3-R5,LR}
+   \   00000004   0xE1A04000         MOV      R4,R0
+     77            int dizaine = (atoi(carac)/10)-(atoi(carac)/100)*10;
+     78            return dizaine+'0';
+   \   00000008   0x........         BL       atoi
+   \   0000000C   0x........         LDR      R1,??DataTable11_6  ;; 0x66666667
+   \   00000010   0xE0C12190         SMULL    R2,R1,R0,R1
+   \   00000014   0xE1A05141         ASR      R5,R1,#+2
+   \   00000018   0xE0855FA5         ADD      R5,R5,R5, LSR #+31
+   \   0000001C   0xE1A00004         MOV      R0,R4
+   \   00000020   0x........         BL       atoi
+   \   00000024   0x........         LDR      R1,??DataTable11_5  ;; 0x51eb851f
+   \   00000028   0xE0C12190         SMULL    R2,R1,R0,R1
+   \   0000002C   0xE1A002C1         ASR      R0,R1,#+5
+   \   00000030   0xE0800FA0         ADD      R0,R0,R0, LSR #+31
+   \   00000034   0xE0801100         ADD      R1,R0,R0, LSL #+2
+   \   00000038   0xE0450081         SUB      R0,R5,R1, LSL #+1
+   \   0000003C   0xE2800030         ADD      R0,R0,#+48
+   \   00000040   0xE20000FF         AND      R0,R0,#0xFF
+   \   00000044   0xE8BD4032         POP      {R1,R4,R5,LR}
+   \   00000048   0xE12FFF1E         BX       LR               ;; return
+     79          }
+
+   \                                 In section .text, align 4, keep-with-next
+     80          char Sunite(char* carac){
+   \                     Sunite:
+   \   00000000   0xE92D5000         PUSH     {R12,LR}
+     81            int unite = atoi(carac)%10;
+     82            return unite+'0';
+   \   00000004   0x........         BL       atoi
+   \   00000008   0x........         LDR      R1,??DataTable11_6  ;; 0x66666667
+   \   0000000C   0xE0C32190         SMULL    R2,R3,R0,R1
+   \   00000010   0xE1A03143         ASR      R3,R3,#+2
+   \   00000014   0xE0833FA0         ADD      R3,R3,R0, LSR #+31
+   \   00000018   0xE3A0200A         MOV      R2,#+10
+   \   0000001C   0xE0030392         MUL      R3,R2,R3
+   \   00000020   0xE0400003         SUB      R0,R0,R3
+   \   00000024                      REQUIRE ?Subroutine1
+   \   00000024                      ;; // Fall through to label ?Subroutine1
+     83          }
+     84          
+     85          ///// determine centaine/dizaine/unite a partir d'un int
+
+   \                                 In section .text, align 4, keep-with-next
+     86          char centaine(int nb){
+     87            int centaine = nb/100;
+     88            return centaine+'0';
+   \                     centaine:
+   \   00000000   0x........         LDR      R1,??DataTable11_5  ;; 0x51eb851f
+   \   00000004   0xE0C12190         SMULL    R2,R1,R0,R1
+   \   00000008   0xE1A002C1         ASR      R0,R1,#+5
+   \   0000000C   0xE0800FA0         ADD      R0,R0,R0, LSR #+31
+   \   00000010   0x........         B        ?Subroutine2
+     89          }
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ?Subroutine2:
+   \   00000000   0xE2800030         ADD      R0,R0,#+48
+   \   00000004   0xE20000FF         AND      R0,R0,#0xFF
+   \   00000008   0xE12FFF1E         BX       LR               ;; return
+     90          
+
+   \                                 In section .text, align 4, keep-with-next
+     91          char dizaine(int nb){
+     92            int dizaine = (nb/10)-(nb/100)*10;
+     93            return dizaine+'0';
+   \                     dizaine:
+   \   00000000   0x........         LDR      R1,??DataTable11_6  ;; 0x66666667
+   \   00000004   0xE0C12190         SMULL    R2,R1,R0,R1
+   \   00000008   0xE1A01141         ASR      R1,R1,#+2
+   \   0000000C   0xE0811FA1         ADD      R1,R1,R1, LSR #+31
+   \   00000010   0x........         LDR      R2,??DataTable11_5  ;; 0x51eb851f
+   \   00000014   0xE0C23290         SMULL    R3,R2,R0,R2
+   \   00000018   0xE1A002C2         ASR      R0,R2,#+5
+   \   0000001C   0xE0800FA0         ADD      R0,R0,R0, LSR #+31
+   \   00000020   0xE0802100         ADD      R2,R0,R0, LSL #+2
+   \   00000024   0xE0410082         SUB      R0,R1,R2, LSL #+1
+   \   00000028                      REQUIRE ?Subroutine2
+   \   00000028                      ;; // Fall through to label ?Subroutine2
+     94          }
+
+   \                                 In section .text, align 4, keep-with-next
+     95          char unite(int nb){
+     96            int unite = nb%10;
+     97            return unite+'0';
+   \                     unite:
+   \   00000000   0x........         LDR      R1,??DataTable11_6  ;; 0x66666667
+   \   00000004   0xE0C32190         SMULL    R2,R3,R0,R1
+   \   00000008   0xE1A03143         ASR      R3,R3,#+2
+   \   0000000C   0xE0833FA0         ADD      R3,R3,R0, LSR #+31
+   \   00000010   0xE3A0200A         MOV      R2,#+10
+   \   00000014   0xE0030392         MUL      R3,R2,R3
+   \   00000018   0xE0400003         SUB      R0,R0,R3
+   \   0000001C   0x........         B        ?Subroutine2
+     98          }
+     99          
+    100          
+
+   \                                 In section .text, align 4, keep-with-next
+    101          void Set_curseur_default(void){
+   \                     Set_curseur_default:
+   \   00000000   0xE92D4000         PUSH     {LR}
+   \   00000004   0xE24DD00C         SUB      SP,SP,#+12
+    102            char chaine[10];
+    103            chaine[0] = 0x1B;
+   \   00000008   0xE3A0101B         MOV      R1,#+27
+   \   0000000C   0xE5CD1000         STRB     R1,[SP, #+0]
+    104            chaine[1] = '[';
+   \   00000010   0xE3A0105B         MOV      R1,#+91
+   \   00000014   0xE5CD1001         STRB     R1,[SP, #+1]
+    105            chaine[2] = 'H';
+   \   00000018   0xE3A01048         MOV      R1,#+72
+   \   0000001C   0xE5CD1002         STRB     R1,[SP, #+2]
+    106            send_word(chaine);
+   \   00000020   0xE1A0000D         MOV      R0,SP
+   \   00000024   0x........         BL       send_word
+    107          }
+   \   00000028   0xE28DD00C         ADD      SP,SP,#+12       ;; stack cleaning
+   \   0000002C   0xE8BD4000         POP      {LR}
+   \   00000030   0xE12FFF1E         BX       LR               ;; return
+    108          
+    109          
+
+   \                                 In section .text, align 4, keep-with-next
+    110          void Set_curseur(int ligne, int colonne){  
+   \                     Set_curseur:
+   \   00000000   0xE92D4030         PUSH     {R4,R5,LR}
+   \   00000004   0xE24DD00C         SUB      SP,SP,#+12
+   \   00000008   0xE1A05000         MOV      R5,R0
+   \   0000000C   0xE1A04001         MOV      R4,R1
+    111            char chaine[10];
+    112            chaine[0] = 0x1B;
+   \   00000010   0xE3A0101B         MOV      R1,#+27
+   \   00000014   0xE5CD1000         STRB     R1,[SP, #+0]
+    113            chaine[1] = '[';
+   \   00000018   0xE3A0105B         MOV      R1,#+91
+   \   0000001C   0xE5CD1001         STRB     R1,[SP, #+1]
+    114            chaine[2] = centaine(ligne);
+   \   00000020   0x........         BL       centaine
+   \   00000024   0xE5CD0002         STRB     R0,[SP, #+2]
+    115            chaine[3] = dizaine(ligne);
+   \   00000028   0xE1A00005         MOV      R0,R5
+   \   0000002C   0x........         BL       dizaine
+   \   00000030   0xE5CD0003         STRB     R0,[SP, #+3]
+    116            chaine[4] = unite(ligne);
+   \   00000034   0xE1A00005         MOV      R0,R5
+   \   00000038   0x........         BL       unite
+   \   0000003C   0xE5CD0004         STRB     R0,[SP, #+4]
+    117            chaine[5] = ';';
+   \   00000040   0xE3A0103B         MOV      R1,#+59
+   \   00000044   0xE5CD1005         STRB     R1,[SP, #+5]
+    118            chaine[6] = centaine(colonne);
+   \   00000048   0xE1A00004         MOV      R0,R4
+   \   0000004C   0x........         BL       centaine
+   \   00000050   0xE5CD0006         STRB     R0,[SP, #+6]
+    119            chaine[7] = dizaine(colonne);
+   \   00000054   0xE1A00004         MOV      R0,R4
+   \   00000058   0x........         BL       dizaine
+   \   0000005C   0xE5CD0007         STRB     R0,[SP, #+7]
+    120            chaine[8] = unite(colonne);
+   \   00000060   0xE1A00004         MOV      R0,R4
+   \   00000064   0x........         BL       unite
+   \   00000068   0x........         B        ?Subroutine0
+    121            chaine[9] = 'H';
+    122            send_word(chaine); // il faut envoyer les caractere ESC et '[' en un seul envoi 
+    123          }
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ?Subroutine0:
+   \   00000000   0xE5CD0008         STRB     R0,[SP, #+8]
+   \   00000004   0xE3A01048         MOV      R1,#+72
+   \   00000008   0xE5CD1009         STRB     R1,[SP, #+9]
+   \   0000000C   0xE1A0000D         MOV      R0,SP
+   \   00000010   0x........         BL       send_word
+   \   00000014   0xE28DD00C         ADD      SP,SP,#+12       ;; stack cleaning
+   \   00000018   0xE8BD4030         POP      {R4,R5,LR}
+   \   0000001C   0xE12FFF1E         BX       LR               ;; return
+    124          
+
+   \                                 In section .text, align 4, keep-with-next
+    125          void S_Set_curseur(char* ligne, char* colonne){  //probleme : affiche le H et ne place pas le curseur
+   \                     S_Set_curseur:
+   \   00000000   0xE92D4030         PUSH     {R4,R5,LR}
+   \   00000004   0xE24DD00C         SUB      SP,SP,#+12
+   \   00000008   0xE1A05000         MOV      R5,R0
+   \   0000000C   0xE1A04001         MOV      R4,R1
+    126            char chaine[10];
+    127            chaine[0] = 0x1B;
+   \   00000010   0xE3A0101B         MOV      R1,#+27
+   \   00000014   0xE5CD1000         STRB     R1,[SP, #+0]
+    128            chaine[1] = '[';
+   \   00000018   0xE3A0105B         MOV      R1,#+91
+   \   0000001C   0xE5CD1001         STRB     R1,[SP, #+1]
+    129            chaine[2] = Scentaine(ligne);  //cas generale avec les centaine et les dizaines,
+   \   00000020   0x........         BL       Scentaine
+   \   00000024   0xE5CD0002         STRB     R0,[SP, #+2]
+    130            chaine[3] = Sdizaine(ligne);  // peut etre egal a 0
+   \   00000028   0xE1A00005         MOV      R0,R5
+   \   0000002C   0x........         BL       Sdizaine
+   \   00000030   0xE5CD0003         STRB     R0,[SP, #+3]
+    131            chaine[4] = Sunite(ligne);
+   \   00000034   0xE1A00005         MOV      R0,R5
+   \   00000038   0x........         BL       Sunite
+   \   0000003C   0xE5CD0004         STRB     R0,[SP, #+4]
+    132            chaine[5] = ';';
+   \   00000040   0xE3A0103B         MOV      R1,#+59
+   \   00000044   0xE5CD1005         STRB     R1,[SP, #+5]
+    133            chaine[6] = Scentaine(colonne);
+   \   00000048   0xE1A00004         MOV      R0,R4
+   \   0000004C   0x........         BL       Scentaine
+   \   00000050   0xE5CD0006         STRB     R0,[SP, #+6]
+    134            chaine[7] = Sdizaine(colonne);
+   \   00000054   0xE1A00004         MOV      R0,R4
+   \   00000058   0x........         BL       Sdizaine
+   \   0000005C   0xE5CD0007         STRB     R0,[SP, #+7]
+    135            chaine[8] = Sunite(colonne);
+   \   00000060   0xE1A00004         MOV      R0,R4
+   \   00000064   0x........         BL       Sunite
+   \   00000068                      REQUIRE ?Subroutine0
+   \   00000068                      ;; // Fall through to label ?Subroutine0
+    136            chaine[9] = 'H';
+    137            send_word(chaine); // il faut envoyer les caractere ESC et '[' en un seul envoi 
+    138          }
+    139          
+    140          
+
+   \                                 In section .text, align 4, keep-with-next
+    141          void decodeASCII(int col, int lig, char carac){  //place carac en position lig,col lors de la reception de l'image en ASCII 
+   \                     decodeASCII:
+   \   00000000   0xE92D4010         PUSH     {R4,LR}
+   \   00000004   0xE1A03001         MOV      R3,R1
+   \   00000008   0xE1A04002         MOV      R4,R2
+    142            Set_curseur(lig, col);
+   \   0000000C   0xE1A01000         MOV      R1,R0
+   \   00000010   0xE1A00003         MOV      R0,R3
+   \   00000014   0x........         BL       Set_curseur
+    143            AT91C_BASE_US0->US_THR = carac;
+   \   00000018   0x........         LDR      R0,??DataTable11_1  ;; 0xfffc001c
+   \   0000001C   0xE5804000         STR      R4,[R0, #+0]
+    144          }
+   \   00000020   0xE8BD4010         POP      {R4,LR}
+   \   00000024   0xE12FFF1E         BX       LR               ;; return
+    145          
+    146          
+    147          
+    148          
+    149          
+    150          
+    151          ///////////////////////// fct IT   ////////////////////////////
+    152          
+
+   \                                 In section .text, align 4, keep-with-next
+    153          void IT_ReadC_dbgu(){ //stoque un carac recu du kit dans la fifo
+    154            if((AT91C_BASE_DBGU->DBGU_CSR&AT91C_US_RXRDY)){
+   \                     IT_ReadC_dbgu:
+   \   00000000   0xE3E000EB         MVN      R0,#+235
+   \   00000004   0xE3C00ED0         BIC      R0,R0,#0xD00
+   \   00000008   0xE5900000         LDR      R0,[R0, #+0]
+   \   0000000C   0xE3100001         TST      R0,#0x1
+   \   00000010   0x0A00000B         BEQ      ??IT_ReadC_dbgu_0
+    155              FIFO[fiw] = AT91C_BASE_DBGU->DBGU_RHR&0x00FF;  //recup des 8 derniers bits
+   \   00000014   0x........         LDR      R0,??DataTable11_4
+   \   00000018   0xE5900000         LDR      R0,[R0, #+0]
+   \   0000001C   0x........         LDR      R1,??DataTable11_7
+   \   00000020   0xE3E020E7         MVN      R2,#+231
+   \   00000024   0xE3C22ED0         BIC      R2,R2,#0xD00
+   \   00000028   0xE5922000         LDR      R2,[R2, #+0]
+   \   0000002C   0xE7C02001         STRB     R2,[R0, +R1]
+    156              fiw++;
+   \   00000030   0x........         LDR      R0,??DataTable11_4
+   \   00000034   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000038   0xE2800001         ADD      R0,R0,#+1
+   \   0000003C   0x........         LDR      R1,??DataTable11_4
+   \   00000040   0xE5810000         STR      R0,[R1, #+0]
+    157            }
+    158          }
+   \                     ??IT_ReadC_dbgu_0:
+   \   00000044   0xE12FFF1E         BX       LR               ;; return
+    159          
+
+   \                                 In section .text, align 4, keep-with-next
+    160          void IT_ReadC_uart(){ //envoie un carac recu du PC directement au kit
+    161            if((AT91C_BASE_US0->US_CSR&AT91C_US_RXRDY)){
+   \                     IT_ReadC_uart:
+   \   00000000   0x........         LDR      R0,??DataTable11  ;; 0xfffc0014
+   \   00000004   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000008   0xE3100001         TST      R0,#0x1
+   \   0000000C   0x0A000012         BEQ      ??IT_ReadC_uart_0
+    162              char carac =  AT91C_BASE_US0->US_RHR&0x00FF;  //recup des 8 derniers bits
+   \   00000010   0x........         LDR      R0,??DataTable11_2  ;; 0xfffc0018
+   \   00000014   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000018   0xE20000FF         AND      R0,R0,#0xFF
+    163              if(carac=='+'||carac=='s'||carac=='?'||carac=='L'||carac==' '){
+   \   0000001C   0xE350002B         CMP      R0,#+43
+   \   00000020   0x0A000007         BEQ      ??IT_ReadC_uart_1
+   \   00000024   0xE3500073         CMP      R0,#+115
+   \   00000028   0x0A000005         BEQ      ??IT_ReadC_uart_1
+   \   0000002C   0xE350003F         CMP      R0,#+63
+   \   00000030   0x0A000003         BEQ      ??IT_ReadC_uart_1
+   \   00000034   0xE350004C         CMP      R0,#+76
+   \   00000038   0x0A000001         BEQ      ??IT_ReadC_uart_1
+   \   0000003C   0xE3500020         CMP      R0,#+32
+   \   00000040   0x1A000005         BNE      ??IT_ReadC_uart_0
+    164                while(!AT91C_BASE_DBGU->DBGU_CSR&AT91C_US_TXRDY){}       //attend que la liaison dbgu soit libre
+   \                     ??IT_ReadC_uart_1:
+   \   00000044   0xE3E010EB         MVN      R1,#+235
+   \   00000048   0xE3C11ED0         BIC      R1,R1,#0xD00
+   \   0000004C   0xE5911000         LDR      R1,[R1, #+0]
+    165                AT91C_BASE_DBGU->DBGU_THR = carac;          //envoie le carac au kit
+   \   00000050   0xE3E010E3         MVN      R1,#+227
+   \   00000054   0xE3C11ED0         BIC      R1,R1,#0xD00
+   \   00000058   0xE5810000         STR      R0,[R1, #+0]
+    166              }
+    167            }
+    168          }
+   \                     ??IT_ReadC_uart_0:
+   \   0000005C   0xE12FFF1E         BX       LR               ;; return
+    169          
+    170          
+    171          
+    172          
+    173          
+    174          
+    175          
+    176          
+    177          
+    178          ///////////////////////// main   ////////////////////////////
+    179          
+
+   \                                 In section .text, align 4, keep-with-next
+    180          int main()
+    181          { 
+   \                     main:
+   \   00000000   0xE92D5000         PUSH     {R12,LR}
+    182              //////////  initialisation  ///////////////
+    183            
+    184              fiw = 0;fir = 0; //init indice de la fifo
+   \   00000004   0x........         LDR      R0,??DataTable11_4
+   \   00000008   0xE3A01000         MOV      R1,#+0
+   \   0000000C   0xE5801000         STR      R1,[R0, #+0]
+   \   00000010   0x........         LDR      R0,??DataTable11_3
+   \   00000014   0xE5801000         STR      R1,[R0, #+0]
+    185              
+    186              // d'abord, il faut activer l'horloge sur le PIO
+    187                 AT91C_BASE_PMC->PMC_PCER =  (1 << ID_PIO_LED);
+   \   00000018   0xE3E000EF         MVN      R0,#+239
+   \   0000001C   0xE3C00FC0         BIC      R0,R0,#0x300
+   \   00000020   0xE3A01008         MOV      R1,#+8
+   \   00000024   0xE5801000         STR      R1,[R0, #+0]
+    188              // ensuite, il faut activer l'horloge sur le module UART
+    189                 AT91C_BASE_PMC->PMC_PCER =  (1 << ID_UART);
+   \   00000028   0xE3A01040         MOV      R1,#+64
+   \   0000002C   0xE4001610         STR      R1,[R0], #-1552
+    190              // Horloge sur module DBGU : deja parametree
+    191                 
+    192              // Ensuite, on attribue les broche des LEDs au PIO, puis on les configure
+    193              // en sortie.
+    194          	BASE_PIO_LED->PIO_PER = LED_MASK; // Set in PIO mode
+   \   00000030   0xE3A01878         MOV      R1,#+7864320
+   \   00000034   0xE5801000         STR      R1,[R0, #+0]
+    195          	BASE_PIO_LED->PIO_OER = LED_MASK; // Configure in Output
+   \   00000038   0xE3800010         ORR      R0,R0,#0x10
+   \   0000003C   0xE5801000         STR      R1,[R0, #+0]
+    196          
+    197          
+    198              // on commence par initialiser les LED dans l'état éteint
+    199              // on écrit dans le registre SODR, pour mettre à '1' car on est en
+    200              // logique inversée
+    201                 BASE_PIO_LED->PIO_SODR = LED_MASK ;
+   \   00000040   0xE3800020         ORR      R0,R0,#0x20
+   \   00000044   0xE400122C         STR      R1,[R0], #-556
+    202          
+    203              // il faut définir que les broches UART_RX_PIN et UART_TX_PIN  ne sont pas en mode PIO
+    204                 AT91C_BASE_PIOA->PIO_PDR = UART_RX_PIN | UART_TX_PIN; 
+   \   00000048   0xE3A01003         MOV      R1,#+3
+   \   0000004C   0xE480106C         STR      R1,[R0], #+108
+    205              // puis les attribuer au module A
+    206                 AT91C_BASE_PIOA->PIO_ASR = UART_RX_PIN | UART_TX_PIN;
+   \   00000050   0xE400106C         STR      R1,[R0], #-108
+    207                 // ces 2 etapes servent a 
+    208                 //s'assurer que l'UART est bien connecte au PIOA et pas PIOB.
+    209              // De meme pour DBGU :
+    210                  AT91C_BASE_PIOA->PIO_PDR = DBGU_TX_PIN | DBGU_RX_PIN; 
+   \   00000054   0xE3A01560         MOV      R1,#+402653184
+   \   00000058   0xE480106C         STR      R1,[R0], #+108
+    211                  AT91C_BASE_PIOA->PIO_ASR = DBGU_TX_PIN | DBGU_RX_PIN; 
+   \   0000005C   0xE5801000         STR      R1,[R0, #+0]
+    212          
+    213              // cet accès valide les RX et TX.
+    214                 AT91C_BASE_US0->US_CR= AT91C_US_RXEN | AT91C_US_TXEN;
+   \   00000060   0xE3A004FC         MOV      R0,#-67108864
+   \   00000064   0xE38007FF         ORR      R0,R0,#0x3FC0000
+   \   00000068   0xE3A01050         MOV      R1,#+80
+   \   0000006C   0xE5801000         STR      R1,[R0, #+0]
+    215              // Config module USART0 (US0)
+    216                 AT91C_BASE_US0->US_MR= AT91C_US_USMODE_NORMAL|AT91C_US_CHMODE_NORMAL|(0x0<<8)|AT91C_US_CHRL_8_BITS|AT91C_US_PAR_NONE; 
+   \   00000070   0xE3800004         ORR      R0,R0,#0x4
+   \   00000074   0xE3A01E8C         MOV      R1,#+2240
+   \   00000078   0xE480101C         STR      R1,[R0], #+28
+    217                 /* AT91C_US_CHRL_8_BITS = carac sur 8 bits (0x3 << 6)
+    218                    AT91C_US_RSYNC = Sync mode reset (0x0 << 8)
+    219                    AT91C_US_PAR_NONE = pas de parite (0x4 <<  9)
+    220                 */
+    221              // Configuration du baud Rate pour l'UART:
+    222                 AT91C_BASE_US0->US_BRGR =MCK/16/9600;  //baud rate = 9600, carac impose par le PC : BR<115200
+   \   0000007C   0xE3A01F4E         MOV      R1,#+312
+   \   00000080   0xE5801000         STR      R1,[R0, #+0]
+    223                  
+    224              // Config DBGU :
+    225                  AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RXEN | AT91C_US_TXEN ; //autorise TX et RX
+   \   00000084   0xE3E000FF         MVN      R0,#+255
+   \   00000088   0xE3C00ED0         BIC      R0,R0,#0xD00
+   \   0000008C   0xE3A01050         MOV      R1,#+80
+   \   00000090   0xE5801000         STR      R1,[R0, #+0]
+    226                  AT91C_BASE_DBGU->DBGU_MR = AT91C_US_CHMODE_NORMAL | AT91C_US_PAR_NONE; //mode normal & pas de parite
+   \   00000094   0xE3800004         ORR      R0,R0,#0x4
+   \   00000098   0xE3A01E80         MOV      R1,#+2048
+   \   0000009C   0xE480101C         STR      R1,[R0], #+28
+    227                  AT91C_BASE_DBGU->DBGU_BRGR = MCK/16/200000; // Baud rate = 200kBps (énoncé)
+   \   000000A0   0xE3A0100F         MOV      R1,#+15
+   \   000000A4   0xE5801000         STR      R1,[R0, #+0]
+    228                    
+    229                  //interr :
+    230              // Enable interrupt USART
+    231                  AT91C_BASE_US0->US_IER=AT91C_US_RXRDY;  // En. interruption sur la reception
+   \   000000A8   0x........         LDR      R0,??DataTable11_8  ;; 0xfffc0008
+   \   000000AC   0xE3A01001         MOV      R1,#+1
+   \   000000B0   0xE5801000         STR      R1,[R0, #+0]
+    232                  AT91C_BASE_US0->US_IDR=AT91C_US_TXRDY; // En. interruption sur l'envoi 
+   \   000000B4   0xE3800004         ORR      R0,R0,#0x4
+   \   000000B8   0xE3A01002         MOV      R1,#+2
+   \   000000BC   0xE5801000         STR      R1,[R0, #+0]
+    233              // Puis Enable interrupt DBGU
+    234                  AT91C_BASE_DBGU->DBGU_IER = AT91C_US_RXRDY;
+   \   000000C0   0xE3E000F7         MVN      R0,#+247
+   \   000000C4   0xE3C00ED0         BIC      R0,R0,#0xD00
+   \   000000C8   0xE3A01001         MOV      R1,#+1
+   \   000000CC   0xE5801000         STR      R1,[R0, #+0]
+    235                  AT91C_BASE_DBGU->DBGU_IDR = AT91C_US_TXRDY;
+   \   000000D0   0xE3800004         ORR      R0,R0,#0x4
+   \   000000D4   0xE3A01002         MOV      R1,#+2
+   \   000000D8   0xE40010EC         STR      R1,[R0], #-236
+    236                  
+    237              // AIC initialization
+    238                  //UART
+    239          	AT91C_BASE_AIC->AIC_IECR = (1<<AT91C_ID_US0); //AT91C_ID_US0 = 6; identifiant du vecteur d'interruption
+   \   000000DC   0xE3A01040         MOV      R1,#+64
+   \   000000E0   0xE4001088         STR      R1,[R0], #-136
+    240                  AT91C_BASE_AIC->AIC_SVR[AT91C_ID_US0] = (unsigned int)IT_ReadC_uart ;  //inter si reception sur uart
+   \   000000E4   0x........         ADR      R1,IT_ReadC_uart
+   \   000000E8   0xE5801000         STR      R1,[R0, #+0]
+    241                  AT91C_BASE_AIC->AIC_SMR[AT91C_ID_US0] = (0x02<<5)|(0x03<<0); //type d'inter (6 = front montant,...) et priorité (de 1 a 7)
+   \   000000EC   0xE3C00080         BIC      R0,R0,#0x80
+   \   000000F0   0xE3A01043         MOV      R1,#+67
+   \   000000F4   0xE4801108         STR      R1,[R0], #+264
+    242                  //DBGU :
+    243                  AT91C_BASE_AIC->AIC_IECR = (1<<AT91C_ID_SYS);
+   \   000000F8   0xE3A01002         MOV      R1,#+2
+   \   000000FC   0xE400109C         STR      R1,[R0], #-156
+    244                  AT91C_BASE_AIC->AIC_SVR[AT91C_ID_SYS] = (unsigned int)IT_ReadC_dbgu; //inter si reception sur dbgu
+   \   00000100   0x........         ADR      R1,IT_ReadC_dbgu
+   \   00000104   0xE5801000         STR      R1,[R0, #+0]
+    245                  AT91C_BASE_AIC->AIC_SMR[AT91C_ID_SYS] = (0x00<<5)|(0x04<<0);
+   \   00000108   0xE3C00080         BIC      R0,R0,#0x80
+   \   0000010C   0xE3A01004         MOV      R1,#+4
+   \                     ??main_0:
+   \   00000110   0xE5801000         STR      R1,[R0, #+0]
+    246                  
+    247                  
+    248                 
+    249              //////////  boucle infinie  ///////////////
+    250              for (;;)
+    251              {
+    252                if(fir < fiw ){ //la fifo a été modifiée
+   \                     ??main_1:
+   \   00000114   0x........         LDR      R0,??DataTable11_3
+   \   00000118   0xE5900000         LDR      R0,[R0, #+0]
+   \   0000011C   0x........         LDR      R1,??DataTable11_4
+   \   00000120   0xE5911000         LDR      R1,[R1, #+0]
+   \   00000124   0xE1500001         CMP      R0,R1
+   \   00000128   0xAAFFFFF9         BGE      ??main_1
+    253                  Set_curseur(5,5);  //place le surseur en position 2,2
+   \   0000012C   0xE3A01005         MOV      R1,#+5
+   \   00000130   0xE3A00005         MOV      R0,#+5
+   \   00000134   0x........         BL       Set_curseur
+    254                  send_fifo(FIFO); //on envoie les carac ajoutés
+   \   00000138   0x........         LDR      R0,??DataTable11_7
+   \   0000013C   0x........         BL       send_fifo
+    255                  fir = 0;         //re-init des indices de la fifo
+   \   00000140   0x........         LDR      R0,??DataTable11_3
+   \   00000144   0xE3A01000         MOV      R1,#+0
+   \   00000148   0xE5801000         STR      R1,[R0, #+0]
+    256                  fiw = 0;
+   \   0000014C   0x........         LDR      R0,??DataTable11_4
+   \   00000150   0xEAFFFFEE         B        ??main_0
+    257                }
+    258              }
+    259          }
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable11:
+   \   00000000   0xFFFC0014         DC32     0xfffc0014
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable11_1:
+   \   00000000   0xFFFC001C         DC32     0xfffc001c
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable11_2:
+   \   00000000   0xFFFC0018         DC32     0xfffc0018
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable11_3:
+   \   00000000   0x........         DC32     fir
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable11_4:
+   \   00000000   0x........         DC32     fiw
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable11_5:
+   \   00000000   0x51EB851F         DC32     0x51eb851f
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable11_6:
+   \   00000000   0x66666667         DC32     0x66666667
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable11_7:
+   \   00000000   0x........         DC32     FIFO
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable11_8:
+   \   00000000   0xFFFC0008         DC32     0xfffc0008
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       0   IT_ReadC_dbgu
+       0   IT_ReadC_uart
+      24   S_Set_curseur
+        24   -> Scentaine
+        24   -> Sdizaine
+        24   -> Sunite
+        24   -> send_word
+       8   Scentaine
+         8   -> atoi
+      16   Sdizaine
+        16   -> atoi
+      24   Set_curseur
+        24   -> centaine
+        24   -> dizaine
+        24   -> send_word
+        24   -> unite
+      16   Set_curseur_default
+        16   -> send_word
+       8   Sunite
+         8   -> atoi
+       0   centaine
+       8   decodeASCII
+         8   -> Set_curseur
+       0   dizaine
+       8   main
+         8   -> Set_curseur
+         8   -> send_fifo
+       0   send_back
+         0   -> send_char_UART
+       0   send_char_DBGU
+       0   send_char_UART
+       8   send_fifo
+         8   -> decodeASCII
+       0   send_word
+       0   unite
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable11
+       4  ??DataTable11_1
+       4  ??DataTable11_2
+       4  ??DataTable11_3
+       4  ??DataTable11_4
+       4  ??DataTable11_5
+       4  ??DataTable11_6
+       4  ??DataTable11_7
+       4  ??DataTable11_8
+      32  ?Subroutine0
+      16  ?Subroutine1
+      12  ?Subroutine2
+    8000  FIFO
+      72  IT_ReadC_dbgu
+      96  IT_ReadC_uart
+     104  S_Set_curseur
+      28  Scentaine
+      76  Sdizaine
+     108  Set_curseur
+      52  Set_curseur_default
+      36  Sunite
+      20  centaine
+      40  decodeASCII
+      40  dizaine
+       4  fir
+       4  fiw
+     340  main
+      32  send_back
+      28  send_char_DBGU
+      20  send_char_UART
+     216  send_fifo
+      48  send_word
+      32  unite
+
+ 
+ 8 008 bytes in section .bss
+ 1 484 bytes in section .text
+ 
+ 1 484 bytes of CODE memory
+ 8 008 bytes of DATA memory
+
+Errors: none
+Warnings: none

@@ -1,0 +1,373 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.70.1.5641/W32 for ARM      09/Apr/2018  11:47:28 #
+# Copyright 1999-2013 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91lib\boards\at91sam7x-ek\board_lowlevel.c              #
+#    Command line =  H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91lib\boards\at91sam7x-ek\board_lowlevel.c -D           #
+#                    at91sam7x256 -D sram -D TRACE_LEVEL=4 -lC                #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\List\ --remarks --diag_suppress         #
+#                    Pe826,Pe1375 -o H:\MIP\MI202_TP_micropro\ProjetConcombre #
+#                    DeMer\PCDM\ewp\at91sam7x256_sram\Obj\ --no_cse           #
+#                    --no_unroll --no_inline --no_code_motion --no_tbaa       #
+#                    --no_clustering --no_scheduling --debug --endian=little  #
+#                    --cpu=ARM7TDMI -e --fpu=None --dlib_config "C:\Program   #
+#                    Files (x86)\IAR Systems\Embedded Workbench               #
+#                    6.5\arm\INC\c\DLib_Config_Full.h" -I                     #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\. #
+#                    .\..\..\at91lib/peripherals\ -I                          #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\. #
+#                    .\..\..\at91lib\ -I H:\MIP\MI202_TP_micropro\ProjetConco #
+#                    mbreDeMer\PCDM\ewp\..\..\..\at91lib/components\ -I       #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\. #
+#                    .\..\..\at91lib/boards/at91sam7x-ek\ --interwork         #
+#                    --cpu_mode arm -Oh --use_c++_inline                      #
+#    List file    =  H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\List\board_lowlevel.lst                 #
+#    Object file  =  H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\Obj\board_lowlevel.o                    #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\at91lib\boards\at91sam7x-ek\board_lowlevel.c
+      1          /* ----------------------------------------------------------------------------
+      2           *         ATMEL Microcontroller Software Support 
+      3           * ----------------------------------------------------------------------------
+      4           * Copyright (c) 2008, Atmel Corporation
+      5           *
+      6           * All rights reserved.
+      7           *
+      8           * Redistribution and use in source and binary forms, with or without
+      9           * modification, are permitted provided that the following conditions are met:
+     10           *
+     11           * - Redistributions of source code must retain the above copyright notice,
+     12           * this list of conditions and the disclaimer below.
+     13           *
+     14           * Atmel's name may not be used to endorse or promote products derived from
+     15           * this software without specific prior written permission.
+     16           *
+     17           * DISCLAIMER: THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
+     18           * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+     19           * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+     20           * DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
+     21           * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+     22           * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+     23           * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+     24           * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+     25           * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+     26           * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     27           * ----------------------------------------------------------------------------
+     28           */
+     29          
+     30          //------------------------------------------------------------------------------
+     31          /// \unit
+     32          ///
+     33          /// !Purpose
+     34          ///
+     35          /// Provides the low-level initialization function that gets called on chip
+     36          /// startup.
+     37          ///
+     38          /// !Usage
+     39          ///
+     40          /// LowLevelInit() is called in #board_cstartup.S#.
+     41          //------------------------------------------------------------------------------
+     42          
+     43          //------------------------------------------------------------------------------
+     44          //         Headers
+     45          //------------------------------------------------------------------------------
+     46          
+     47          #include "board.h"
+     48          #include "board_memories.h"
+     49          
+     50          //------------------------------------------------------------------------------
+     51          //         Internal definitions
+     52          //------------------------------------------------------------------------------
+     53          // Startup time of main oscillator (in number of slow clock ticks).
+     54          #define BOARD_OSCOUNT           (AT91C_CKGR_OSCOUNT & (0x40 << 8))
+     55          
+     56          // USB PLL divisor value to obtain a 48MHz clock.
+     57          #define BOARD_USBDIV            AT91C_CKGR_USBDIV_1
+     58          
+     59          // PLL frequency range.
+     60          #define BOARD_CKGR_PLL          AT91C_CKGR_OUT_0
+     61          
+     62          // PLL startup time (in number of slow clock ticks).
+     63          #define BOARD_PLLCOUNT          (16 << 8)
+     64          
+     65          // PLL MUL value.
+     66          #define BOARD_MUL               (AT91C_CKGR_MUL & (72 << 16))
+     67          
+     68          // PLL DIV value.
+     69          #define BOARD_DIV               (AT91C_CKGR_DIV & 14)
+     70          
+     71          // Master clock prescaler value.
+     72          #define BOARD_PRESCALER         AT91C_PMC_PRES_CLK_2
+     73          
+     74          //------------------------------------------------------------------------------
+     75          //         Internal functions
+     76          //------------------------------------------------------------------------------
+     77          //------------------------------------------------------------------------------
+     78          /// Default spurious interrupt handler. Infinite loop.
+     79          //------------------------------------------------------------------------------
+
+   \                                 In section .text, align 4, keep-with-next
+     80          void defaultSpuriousHandler( void )
+     81          {
+     82              while (1);
+   \                     defaultSpuriousHandler:
+   \                     ??defaultSpuriousHandler_0:
+   \   00000000   0xEAFFFFFE         B        ??defaultSpuriousHandler_0
+     83          }
+     84          
+     85          //------------------------------------------------------------------------------
+     86          /// Default handler for fast interrupt requests. Infinite loop.
+     87          //------------------------------------------------------------------------------
+
+   \                                 In section .text, align 4, keep-with-next
+     88          void defaultFiqHandler( void )
+     89          {
+     90              while (1);
+   \                     defaultFiqHandler:
+   \                     ??defaultFiqHandler_0:
+   \   00000000   0xEAFFFFFE         B        ??defaultFiqHandler_0
+     91          }
+     92          
+     93          //------------------------------------------------------------------------------
+     94          /// Default handler for standard interrupt requests. Infinite loop.
+     95          //------------------------------------------------------------------------------
+
+   \                                 In section .text, align 4, keep-with-next
+     96          void defaultIrqHandler( void )
+     97          {
+     98              while (1);
+   \                     defaultIrqHandler:
+   \                     ??defaultIrqHandler_0:
+   \   00000000   0xEAFFFFFE         B        ??defaultIrqHandler_0
+     99          }
+    100          
+    101          //------------------------------------------------------------------------------
+    102          //         Exported functions
+    103          //------------------------------------------------------------------------------
+    104          
+    105          //------------------------------------------------------------------------------
+    106          /// Performs the low-level initialization of the chip. This includes EFC, master
+    107          /// clock, AIC & watchdog configuration, as well as memory remapping.
+    108          //------------------------------------------------------------------------------
+
+   \                                 In section .text, align 4, keep-with-next
+    109          void LowLevelInit( void )
+    110          {
+   \                     LowLevelInit:
+   \   00000000   0xE92D5000         PUSH     {R12,LR}
+    111              unsigned char i;
+    112          
+    113              /* Set flash wait states in the EFC
+    114               **********************************/
+    115              /* 48MHz = 1 wait state */
+    116          #if defined(at91sam7x512)
+    117              AT91C_BASE_EFC0->EFC_FMR = AT91C_MC_FWS_1FWS;
+    118              AT91C_BASE_EFC1->EFC_FMR = AT91C_MC_FWS_1FWS;
+    119          #elif defined(at91sam7x128) || defined(at91sam7x256)
+    120              AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_1FWS;
+   \   00000004   0xE3E0009F         MVN      R0,#+159
+   \   00000008   0xE3A01F40         MOV      R1,#+256
+   \   0000000C   0xE5801000         STR      R1,[R0, #+0]
+    121          #else
+    122              #error No chip definition ?
+    123          #endif
+    124          
+    125              /* Initialize main oscillator
+    126               ****************************/
+    127              AT91C_BASE_PMC->PMC_MOR = BOARD_OSCOUNT | AT91C_CKGR_MOSCEN;
+   \   00000010   0xE3C00FD0         BIC      R0,R0,#0x340
+   \   00000014   0xE3A01001         MOV      R1,#+1
+   \   00000018   0xE3811C40         ORR      R1,R1,#0x4000
+   \   0000001C   0xE5801000         STR      R1,[R0, #+0]
+    128              while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MOSCS));
+   \                     ??LowLevelInit_0:
+   \   00000020   0xE3E00097         MVN      R0,#+151
+   \   00000024   0xE3C00FC0         BIC      R0,R0,#0x300
+   \   00000028   0xE5900000         LDR      R0,[R0, #+0]
+   \   0000002C   0xE3100001         TST      R0,#0x1
+   \   00000030   0x0AFFFFFA         BEQ      ??LowLevelInit_0
+    129          
+    130              /* Initialize PLL at 96MHz (96.109) and USB clock to 48MHz */
+    131              AT91C_BASE_PMC->PMC_PLLR = BOARD_USBDIV | BOARD_CKGR_PLL | BOARD_PLLCOUNT
+    132                                         | BOARD_MUL | BOARD_DIV;
+   \   00000034   0xE3E000D3         MVN      R0,#+211
+   \   00000038   0xE3C00FC0         BIC      R0,R0,#0x300
+   \   0000003C   0x........         LDR      R1,??DataTable0  ;; 0x1048100e
+   \   00000040   0xE5801000         STR      R1,[R0, #+0]
+    133              while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK));
+   \                     ??LowLevelInit_1:
+   \   00000044   0xE3E00097         MVN      R0,#+151
+   \   00000048   0xE3C00FC0         BIC      R0,R0,#0x300
+   \   0000004C   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000050   0xE3100004         TST      R0,#0x4
+   \   00000054   0x0AFFFFFA         BEQ      ??LowLevelInit_1
+    134          
+    135              /* Wait for the master clock if it was already initialized */
+    136              while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
+   \                     ??LowLevelInit_2:
+   \   00000058   0xE3E00097         MVN      R0,#+151
+   \   0000005C   0xE3C00FC0         BIC      R0,R0,#0x300
+   \   00000060   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000064   0xE3100008         TST      R0,#0x8
+   \   00000068   0x0AFFFFFA         BEQ      ??LowLevelInit_2
+    137          
+    138              /* Switch to fast clock
+    139               **********************/
+    140              /* Switch to slow clock + prescaler */
+    141              AT91C_BASE_PMC->PMC_MCKR = BOARD_PRESCALER;
+   \   0000006C   0xE3E000CF         MVN      R0,#+207
+   \   00000070   0xE3C00FC0         BIC      R0,R0,#0x300
+   \   00000074   0xE3A01004         MOV      R1,#+4
+   \   00000078   0xE5801000         STR      R1,[R0, #+0]
+    142              while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
+   \                     ??LowLevelInit_3:
+   \   0000007C   0xE3E00097         MVN      R0,#+151
+   \   00000080   0xE3C00FC0         BIC      R0,R0,#0x300
+   \   00000084   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000088   0xE3100008         TST      R0,#0x8
+   \   0000008C   0x0AFFFFFA         BEQ      ??LowLevelInit_3
+    143          
+    144              /* Switch to fast clock + prescaler */
+    145              AT91C_BASE_PMC->PMC_MCKR |= AT91C_PMC_CSS_PLL_CLK;
+   \   00000090   0xE3E000CF         MVN      R0,#+207
+   \   00000094   0xE3C00FC0         BIC      R0,R0,#0x300
+   \   00000098   0xE5900000         LDR      R0,[R0, #+0]
+   \   0000009C   0xE3800003         ORR      R0,R0,#0x3
+   \   000000A0   0xE3E010CF         MVN      R1,#+207
+   \   000000A4   0xE3C11FC0         BIC      R1,R1,#0x300
+   \   000000A8   0xE5810000         STR      R0,[R1, #+0]
+    146              while (!(AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY));
+   \                     ??LowLevelInit_4:
+   \   000000AC   0xE2810038         ADD      R0,R1,#+56
+   \   000000B0   0xE5900000         LDR      R0,[R0, #+0]
+   \   000000B4   0xE3100008         TST      R0,#0x8
+   \   000000B8   0x0AFFFFFB         BEQ      ??LowLevelInit_4
+    147          
+    148              /* Initialize AIC
+    149               ****************/
+    150              AT91C_BASE_AIC->AIC_IDCR = 0xFFFFFFFF;
+   \   000000BC   0xE3E000DB         MVN      R0,#+219
+   \   000000C0   0xE3C00EE0         BIC      R0,R0,#0xE00
+   \   000000C4   0xE3E01000         MVN      R1,#+0
+   \   000000C8   0xE40010A4         STR      R1,[R0], #-164
+    151              AT91C_BASE_AIC->AIC_SVR[0] = (unsigned int) defaultFiqHandler;
+   \   000000CC   0x........         ADR      R1,defaultFiqHandler
+   \   000000D0   0xE5801000         STR      R1,[R0, #+0]
+    152              for (i = 1; i < 31; i++) {
+   \   000000D4   0xE3800004         ORR      R0,R0,#0x4
+   \   000000D8   0xE3A0101E         MOV      R1,#+30
+   \   000000DC   0x........         ADR      R2,defaultIrqHandler
+    153          
+    154                  AT91C_BASE_AIC->AIC_SVR[i] = (unsigned int) defaultIrqHandler;
+   \                     ??LowLevelInit_5:
+   \   000000E0   0xE4802004         STR      R2,[R0], #+4
+    155              }
+   \   000000E4   0xE2511001         SUBS     R1,R1,#+1
+   \   000000E8   0x1AFFFFFC         BNE      ??LowLevelInit_5
+    156              AT91C_BASE_AIC->AIC_SPU = (unsigned int) defaultSpuriousHandler;
+   \   000000EC   0xE3E000CB         MVN      R0,#+203
+   \   000000F0   0xE3C00EE0         BIC      R0,R0,#0xE00
+   \   000000F4   0x........         ADR      R1,defaultSpuriousHandler
+   \   000000F8   0xE5801000         STR      R1,[R0, #+0]
+    157          
+    158              // Unstack nested interrupts
+    159              for (i = 0; i < 8 ; i++) {
+   \   000000FC   0xE3A00008         MOV      R0,#+8
+   \   00000100   0xE3E010CF         MVN      R1,#+207
+   \   00000104   0xE3C11EE0         BIC      R1,R1,#0xE00
+   \   00000108   0xE3A02000         MOV      R2,#+0
+    160          
+    161                  AT91C_BASE_AIC->AIC_EOICR = 0;
+   \                     ??LowLevelInit_6:
+   \   0000010C   0xE5812000         STR      R2,[R1, #+0]
+    162              }
+   \   00000110   0xE2500001         SUBS     R0,R0,#+1
+   \   00000114   0x1AFFFFFC         BNE      ??LowLevelInit_6
+    163          
+    164              // Enable Debug mode
+    165              AT91C_BASE_AIC->AIC_DCR = AT91C_AIC_DCR_PROT;
+   \   00000118   0xE3810008         ORR      R0,R1,#0x8
+   \   0000011C   0xE3A01001         MOV      R1,#+1
+   \   00000120   0xE5801000         STR      R1,[R0, #+0]
+    166          
+    167              /* Watchdog initialization
+    168               *************************/
+    169              AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
+   \   00000124   0xE3E000BB         MVN      R0,#+187
+   \   00000128   0xE3C00F80         BIC      R0,R0,#0x200
+   \   0000012C   0xE3A01C80         MOV      R1,#+32768
+   \   00000130   0xE5801000         STR      R1,[R0, #+0]
+    170          
+    171              /* Remap
+    172               *******/
+    173              BOARD_RemapRam();
+   \   00000134   0x........         BL       BOARD_RemapRam
+    174          
+    175              // Disable RTT and PIT interrupts (potential problem when program A
+    176              // configures RTT, then program B wants to use PIT only, interrupts
+    177              // from the RTT will still occur since they both use AT91C_ID_SYS)
+    178              AT91C_BASE_RTTC->RTTC_RTMR &= ~(AT91C_RTTC_ALMIEN | AT91C_RTTC_RTTINCIEN);
+                                                   ^
+Remark[Pe068]: integer conversion resulted in a change of sign
+   \   00000138   0xE3E000DF         MVN      R0,#+223
+   \   0000013C   0xE3C00F80         BIC      R0,R0,#0x200
+   \   00000140   0xE5900000         LDR      R0,[R0, #+0]
+   \   00000144   0xE3C00BC0         BIC      R0,R0,#0x30000
+   \   00000148   0xE3E010DF         MVN      R1,#+223
+   \   0000014C   0xE3C11F80         BIC      R1,R1,#0x200
+   \   00000150   0xE5810000         STR      R0,[R1, #+0]
+    179              AT91C_BASE_PITC->PITC_PIMR &= ~AT91C_PITC_PITIEN;
+                                                   ^
+Remark[Pe068]: integer conversion resulted in a change of sign
+   \   00000154   0xE3810010         ORR      R0,R1,#0x10
+   \   00000158   0xE5900000         LDR      R0,[R0, #+0]
+   \   0000015C   0xE3C00780         BIC      R0,R0,#0x2000000
+   \   00000160   0xE3811010         ORR      R1,R1,#0x10
+   \   00000164   0xE5810000         STR      R0,[R1, #+0]
+    180          }
+   \   00000168   0xE8BD4001         POP      {R0,LR}
+   \   0000016C   0xE12FFF1E         BX       LR               ;; return
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable0:
+   \   00000000   0x1048100E         DC32     0x1048100e
+    181          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       8   LowLevelInit
+         8   -> BOARD_RemapRam
+       0   defaultFiqHandler
+       0   defaultIrqHandler
+       0   defaultSpuriousHandler
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable0
+     368  LowLevelInit
+       4  defaultFiqHandler
+       4  defaultIrqHandler
+       4  defaultSpuriousHandler
+
+ 
+ 384 bytes in section .text
+ 
+ 384 bytes of CODE memory
+
+Errors: none
+Warnings: none

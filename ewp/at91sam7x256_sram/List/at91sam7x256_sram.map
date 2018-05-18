@@ -1,0 +1,218 @@
+###############################################################################
+#                                                                             #
+# IAR ELF Linker V6.70.1.5641/W32 for ARM               07/May/2018  12:45:22 #
+# Copyright 2007-2013 IAR Systems AB.                                         #
+#                                                                             #
+#    Output file  =  H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\Exe\at91sam7x256_sram.out               #
+#    Map file     =  H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\List\at91sam7x256_sram.map              #
+#    Command line =  H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\Obj\board_cstartup_iar.o                #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\Obj\board_lowlevel.o                    #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\Obj\board_memories.o                    #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\Obj\main.o --redirect                   #
+#                    _Printf=_PrintfSmall --redirect _Scanf=_ScanfSmall -o    #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\Exe\at91sam7x256_sram.out --map         #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91sam7x256_sram\List\at91sam7x256_sram.map --config     #
+#                    H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\a #
+#                    t91lib\boards\at91sam7x-ek\at91sam7x256\sram             #
+#                    --diag_suppress Lp005,Lp006 --semihosting --entry        #
+#                    resetHandler --vfe                                       #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+*******************************************************************************
+*** RUNTIME MODEL ATTRIBUTES
+***
+
+CppFlavor                     = *
+__SystemLibrary               = DLib
+__dlib_dynamic_initialization = normal
+
+
+*******************************************************************************
+*** PLACEMENT SUMMARY
+***
+
+"P1":  place in [from 0x00200000 to 0x002000ff] { section .vectors };
+"P2":  place in [from 0x00200100 to 0x0020ffff] {
+          section .cstartup, ro, rw, block IRQ_STACK, block SYS_STACK,
+          block CSTACK, block HEAP };
+
+  Section          Kind        Address    Size  Object
+  -------          ----        -------    ----  ------
+"P1":                                     0x88
+  .vectors         ro code  0x00200000    0x88  board_cstartup_iar.o [1]
+                          - 0x00200088    0x88
+
+"P2", part 1 of 2:                      0x17a8
+  .text            ro code  0x00200100   0x444  main.o [1]
+  .text            ro code  0x00200544   0x180  board_lowlevel.o [1]
+  .text            ro code  0x002006c4    0x58  board_memories.o [1]
+  .cstartup        ro code  0x0020071c    0x44  board_cstartup_iar.o [1]
+  .text            ro code  0x00200760    0x32  data_init.o [4]
+  .text            ro code  0x00200792    0x2a  zero_init3.o [4]
+  Veneer           ro code  0x002007bc     0xc  - Linker created -
+  .text            ro code  0x002007c8    0x2c  cmain.o [4]
+  .text            ro code  0x002007f4     0x8  low_level_init.o [3]
+  .text            ro code  0x002007fc     0x4  exit.o [3]
+  .text            ro code  0x00200800    0x20  exit.o [5]
+  .text            ro code  0x00200820    0x10  cexit.o [4]
+  .iar.init_table  const    0x00200830    0x10  - Linker created -
+  .text            ro code  0x00200840     0x4  vectortrap.o [4]
+  .text            ro code  0x00200844     0x4  xreturnswi.o [5]
+  .rodata          const    0x00200848     0x0  zero_init3.o [4]
+  IRQ_STACK                 0x00200848    0x60  <Block>
+    IRQ_STACK      uninit   0x00200848    0x60  <Block tail>
+  CSTACK                    0x002008a8  0x1000  <Block>
+    CSTACK         uninit   0x002008a8  0x1000  <Block tail>
+                          - 0x002018a8  0x17a8
+
+"P2", part 2 of 2:                      0x1f48
+  .bss             zero     0x002018a8  0x1f40  main.o [1]
+  .bss             zero     0x002037e8     0x4  main.o [1]
+  .bss             zero     0x002037ec     0x4  main.o [1]
+                          - 0x002037f0  0x1f48
+
+
+*******************************************************************************
+*** INIT TABLE
+***
+
+          Address     Size
+          -------     ----
+Zero (__iar_zero_init3)
+    1 destination range, total size 0x1f48:
+          0x002018a8  0x1f48
+
+
+
+*******************************************************************************
+*** MODULE SUMMARY
+***
+
+    Module                ro code  ro data  rw data
+    ------                -------  -------  -------
+H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\at91sam7x256_sram\Obj: [1]
+    board_cstartup_iar.o      204
+    board_lowlevel.o          384
+    board_memories.o           88
+    main.o                  1 092             8 008
+    -----------------------------------------------
+    Total:                  1 768             8 008
+
+command line: [2]
+    -----------------------------------------------
+    Total:
+
+dl4t_alf.a: [3]
+    exit.o                      4
+    low_level_init.o            8
+    -----------------------------------------------
+    Total:                     12
+
+rt4t_al.a: [4]
+    cexit.o                    16
+    cmain.o                    44
+    data_init.o                50
+    vectortrap.o                4
+    zero_init3.o               42
+    -----------------------------------------------
+    Total:                    156
+
+shs_l.a: [5]
+    exit.o                     32
+    xreturnswi.o                4
+    -----------------------------------------------
+    Total:                     36
+
+    Linker created             12       16    4 192
+---------------------------------------------------
+    Grand Total:            1 984       16   12 200
+
+
+*******************************************************************************
+*** ENTRY LIST
+***
+
+Entry                      Address    Size  Type      Object
+-----                      -------    ----  ----      ------
+?main                   0x002007c8          Code  Gb  cmain.o [4]
+Abort_Handler           0x00200840          Code  Wk  vectortrap.o [4]
+BOARD_GetRemap          0x002006c4    0x38  Code  Lc  board_memories.o [1]
+BOARD_RemapRam          0x002006fc     0xc  Code  Gb  board_memories.o [1]
+CSTACK$$Base            0x002008a8           --   Gb  - Linker created -
+CSTACK$$Limit           0x002018a8           --   Gb  - Linker created -
+FIFO                    0x002018a8  0x1f40  Data  Gb  main.o [1]
+FIQ_Handler             0x00200840          Code  Wk  vectortrap.o [4]
+IRQ_STACK$$Base         0x00200848           --   Gb  - Linker created -
+IRQ_STACK$$Limit        0x002008a8           --   Gb  - Linker created -
+IT_ReadC_dbgu           0x00200324    0x48  Code  Gb  main.o [1]
+IT_ReadC_uart           0x0020036c    0x60  Code  Gb  main.o [1]
+LowLevelInit            0x00200550   0x170  Code  Gb  board_lowlevel.o [1]
+Prefetch_Handler        0x00200840          Code  Wk  vectortrap.o [4]
+Region$$Table$$Base     0x00200830           --   Gb  - Linker created -
+Region$$Table$$Limit    0x00200840           --   Gb  - Linker created -
+SWI_Handler             0x00200840          Code  Wk  vectortrap.o [4]
+Set_curseur             0x00200270    0x6c  Code  Gb  main.o [1]
+Undefined_Handler       0x00200840          Code  Wk  vectortrap.o [4]
+__ICFEDIT_region_RAM_end__ {Abs}
+                        0x0020ffff           --   Gb  command line/config [2]
+__ICFEDIT_region_RAM_start__ {Abs}
+                        0x00200000           --   Gb  command line/config [2]
+__ICFEDIT_size_cstack__ {Abs}
+                        0x00001000           --   Gb  command line/config [2]
+__ICFEDIT_size_heap__ {Abs}
+                        0x00000000           --   Gb  command line/config [2]
+__ICFEDIT_size_irqstack__ {Abs}
+                        0x00000060           --   Gb  command line/config [2]
+__ICFEDIT_size_sysstack__ {Abs}
+                        0x00000060           --   Gb  command line/config [2]
+__ICFEDIT_size_vectors__ {Abs}
+                        0x00000100           --   Gb  command line/config [2]
+__cmain                 0x002007c8          Code  Gb  cmain.o [4]
+__exit                  0x00200800    0x20  Code  Gb  exit.o [5]
+__iar_data_init3        0x00200761    0x30  Code  Gb  data_init.o [4]
+__iar_return_from_swi   0x00200844     0x4  Code  Gb  xreturnswi.o [5]
+__iar_zero_init3        0x00200793    0x2a  Code  Gb  zero_init3.o [4]
+__low_level_init        0x002007f4     0x8  Code  Gb  low_level_init.o [3]
+_call_main              0x002007dc          Code  Gb  cmain.o [4]
+_exit                   0x00200820          Code  Gb  cexit.o [4]
+_main                   0x002007e4          Code  Gb  cmain.o [4]
+centaine                0x00200208    0x14  Code  Gb  main.o [1]
+decodeASCII             0x002002fc    0x28  Code  Gb  main.o [1]
+defaultFiqHandler       0x00200548     0x4  Code  Gb  board_lowlevel.o [1]
+defaultIrqHandler       0x0020054c     0x4  Code  Gb  board_lowlevel.o [1]
+defaultSpuriousHandler  0x00200544     0x4  Code  Gb  board_lowlevel.o [1]
+dizaine                 0x0020021c    0x28  Code  Gb  main.o [1]
+exit                    0x002007fc     0x4  Code  Gb  exit.o [3]
+fir                     0x002037ec     0x4  Data  Gb  main.o [1]
+fiw                     0x002037e8     0x4  Data  Gb  main.o [1]
+irqHandler              0x00200034          Code  Gb  board_cstartup_iar.o [1]
+main                    0x002003cc   0x154  Code  Gb  main.o [1]
+resetHandler            0x0020071c          Code  Gb  board_cstartup_iar.o [1]
+resetVector             0x00200000          Code  Gb  board_cstartup_iar.o [1]
+send_fifo               0x00200130    0xd8  Code  Gb  main.o [1]
+send_word               0x00200100    0x30  Code  Gb  main.o [1]
+unite                   0x00200250    0x20  Code  Gb  main.o [1]
+
+
+[1] = H:\MIP\MI202_TP_micropro\ProjetConcombreDeMer\PCDM\ewp\at91sam7x256_sram\Obj
+[2] = command line
+[3] = dl4t_alf.a
+[4] = rt4t_al.a
+[5] = shs_l.a
+
+   1 984 bytes of readonly  code memory
+      16 bytes of readonly  data memory
+  12 200 bytes of readwrite data memory
+
+Errors: none
+Warnings: none
